@@ -1,15 +1,14 @@
 // Turns annotated markdown into flowing prose:
 //
 // - headings stay headings;
-// - top-level list items become sentences, joined into one paragraph;
-// - nested list items (and their continuation lines) are notes, and are dropped;
+// - each list becomes one paragraph: every item, nested or not, becomes a
+//   sentence, in the order written; a blank line ends the list;
 // - anything in [square brackets] is a note, and is dropped, along with a
 //   (link target) that follows it;
 // - paragraphs and fenced code are kept as they are.
 
 const HEADING = /^(#{1,6})\s+(.*)$/;
-const TOP_ITEM = /^([-*+]|\d+[.)])\s+(.*)$/;
-const NESTED_ITEM = /^\s+([-*+]|\d+[.)])\s+/;
+const ITEM = /^\s*([-*+]|\d+[.)])\s+(.*)$/;
 const FENCE = /^\s*(```|~~~)/;
 const ENDS_SENTENCE = /[.!?:;…"”’)]$/;
 
@@ -20,10 +19,12 @@ function stripNotes(text: string) {
     .trim();
 }
 
+/** A list item as a sentence: capitalised, and ending in a full stop unless it already ends. */
 function sentence(text: string) {
   const clean = stripNotes(text);
   if (!clean) return "";
-  return ENDS_SENTENCE.test(clean) ? clean : clean + ".";
+  const capitalised = clean[0].toLocaleUpperCase() + clean.slice(1);
+  return ENDS_SENTENCE.test(capitalised) ? capitalised : capitalised + ".";
 }
 
 /** Prose as markdown: headings and paragraphs, nothing else. */
@@ -64,9 +65,12 @@ export function toProse(markdown: string): string {
       continue;
     }
 
-    if (NESTED_ITEM.test(line) || (inList && /^\s+\S/.test(line))) continue;
+    if (line.trim() === "") {
+      flush();
+      continue;
+    }
 
-    const item = TOP_ITEM.exec(line);
+    const item = ITEM.exec(line);
     if (item) {
       if (!inList) flush();
       inList = true;
@@ -75,9 +79,11 @@ export function toProse(markdown: string): string {
       continue;
     }
 
-    if (line.trim() === "") {
-      // A blank line inside a list does not end it; the next non-list line does.
-      if (!inList) flush();
+    if (inList && /^\s+\S/.test(line)) {
+      // An indented line under an item continues that item's sentence.
+      const last = paragraph.pop();
+      const s = sentence(`${last ? last.replace(/\.$/, "") : ""} ${line}`);
+      if (s) paragraph.push(s);
       continue;
     }
 

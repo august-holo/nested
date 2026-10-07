@@ -26,9 +26,9 @@ CloudFront (nested.holotekt.com)
 `web/app/lib/prose.ts`, with its tests in `prose.test.ts` (`npm test`):
 
 - headings stay headings;
-- top-level list items become sentences (a full stop is added when missing) and are
-  joined into one paragraph;
-- nested list items, and their continuation lines, are dropped;
+- each list becomes one paragraph: every item, nested or not, becomes a sentence in the
+  order written (capitalised, with a full stop added when missing); a blank line ends the
+  list, so the next one is a new paragraph;
 - anything in `[square brackets]` is dropped, along with a `(link target)` that follows it;
 - paragraphs and fenced code are kept as they are.
 

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { toProse } from "./prose.ts";
 
-test("top-level items become one paragraph; notes and nested items go", () => {
+test("a list becomes one paragraph, nested items included, notes dropped", () => {
   const input = [
     "# Trip",
     "- We sailed at dawn [check the date]",
@@ -10,7 +10,10 @@ test("top-level items become one paragraph; notes and nested items go", () => {
     "  - Pip was seasick",
     "- Reached the island by noon",
   ].join("\n");
-  assert.equal(toProse(input), "# Trip\n\nWe sailed at dawn. Reached the island by noon.");
+  assert.equal(
+    toProse(input),
+    "# Trip\n\nWe sailed at dawn. Wind was 15 kt. Pip was seasick. Reached the island by noon.",
+  );
 });
 
 test("existing punctuation is kept, links lose their target too", () => {
@@ -18,19 +21,19 @@ test("existing punctuation is kept, links lose their target too", () => {
   assert.equal(toProse(input), "Really? See for more. Done!");
 });
 
-test("a blank line inside a list keeps the paragraph together", () => {
-  const input = "- One\n\n- Two\n\nA closing line.";
-  assert.equal(toProse(input), "One. Two.\n\nA closing line.");
+test("a blank line separates lists into paragraphs", () => {
+  const input = "- One\n- Two\n\n- Three\n  - Four\n\nA closing line.";
+  assert.equal(toProse(input), "One. Two.\n\nThree. Four.\n\nA closing line.");
 });
 
-test("continuation lines of nested items are dropped", () => {
-  const input = "- Main point\n  - note that goes on\n    for a while\n- Second point";
-  assert.equal(toProse(input), "Main point. Second point.");
+test("an indented continuation line belongs to its item", () => {
+  const input = "- Main point\n  - a note that goes on\n    for a while\n- Second point";
+  assert.equal(toProse(input), "Main point. A note that goes on for a while. Second point.");
 });
 
 test("numbered lists, nested deeper, and headings with notes", () => {
-  const input = "## Plan [draft]\n1. First\n   1. detail\n2. Second\n\nThen prose.";
-  assert.equal(toProse(input), "## Plan\n\nFirst. Second.\n\nThen prose.");
+  const input = "## Plan [draft]\n1. First\n   1. Detail\n2. Second\n\nThen prose.";
+  assert.equal(toProse(input), "## Plan\n\nFirst. Detail. Second.\n\nThen prose.");
 });
 
 test("fenced code is kept as it is", () => {
