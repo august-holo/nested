@@ -1,0 +1,13 @@
+.DS_Store
+
+# rust
+/api/target
+
+# local database
+/api/data
+
+# terraform (state lives in S3)
+.terraform/
+*.tfstate
+*.tfstate.*
+tfplan

@@ -1,0 +1,18 @@
+.gate {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.gate p {
+  color: var(--dim);
+}
+
+.error {
+  color: #c0392b;
+}

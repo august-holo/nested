@@ -1,0 +1,76 @@
+#!/bin/bash
+set -euo pipefail
+
+SHA='{{ sha }}'
+DIR=/opt/${name}
+SRC=s3://${bucket}/api/$SHA
+
+install -d -m 755 "$DIR" /etc/${name}
+
+cat > /etc/${name}/env <<'EOF'
+BIND_ADDR=0.0.0.0:${port}
+COGNITO_ISSUER=${cognito_issuer}
+COGNITO_CLIENT_ID=${client_id}
+DATA_DIR=/var/lib/${name}
+EOF
+
+cat > /etc/systemd/system/${name}.service <<'EOF'
+[Unit]
+Description=${name} API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/opt/${name}/api
+EnvironmentFile=/etc/${name}/env
+Restart=always
+RestartSec=2
+DynamicUser=yes
+StateDirectory=${name}
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+aws s3 cp "$SRC/api" "$DIR/api.new" --only-show-errors
+EXPECTED=$(aws s3 cp "$SRC/api.sha256" - --only-show-errors)
+echo "$EXPECTED  $DIR/api.new" | sha256sum --check --quiet
+chmod 755 "$DIR/api.new"
+
+if [ -f "$DIR/api" ]; then
+  cp -p "$DIR/api" "$DIR/api.prev"
+fi
+mv "$DIR/api.new" "$DIR/api"
+
+healthy() {
+  for _ in $(seq 1 15); do
+    if curl -fsS -o /dev/null "http://127.0.0.1:${port}/api/health"; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+systemctl daemon-reload
+systemctl enable ${name}.service
+systemctl restart ${name}.service
+
+if healthy; then
+  echo "deployed $SHA"
+  exit 0
+fi
+
+echo "health check failed for $SHA" >&2
+journalctl -u ${name}.service -n 30 --no-pager >&2 || true
+if [ -f "$DIR/api.prev" ]; then
+  mv "$DIR/api.prev" "$DIR/api"
+  systemctl restart ${name}.service
+  echo "rolled back to the previous build" >&2
+fi
+exit 1
