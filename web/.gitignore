@@ -34,6 +34,7 @@ yarn-error.log*
 .env*
 # written by Terraform, contains no secrets
 !.env
+!.env.development
 
 # vercel
 .vercel
