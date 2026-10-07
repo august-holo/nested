@@ -140,10 +140,15 @@
   max-width: 68ch;
 }
 
+.proseBody p {
+  margin: 0 0 3.2em;
+}
+
 .proseBody h1,
 .proseBody h2,
 .proseBody h3 {
   line-height: 1.25;
+  margin: 0 0 1em;
 }
 
 .proseBody pre {
