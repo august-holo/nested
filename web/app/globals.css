@@ -56,6 +56,11 @@ a {
   --accent: #2563eb;
   --accent-soft: #dbeafe;
   --selection: #bfdbfe;
+  --note-blue: #1d4ed8;
+  --note-orange: #c2410c;
+  --note-green: #15803d;
+  --note-red: #b91c1c;
+  --note-marker: #71717a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -67,6 +72,11 @@ a {
     --accent: #60a5fa;
     --accent-soft: #1e3a5f;
     --selection: #1e3a5f;
+    --note-blue: #93c5fd;
+    --note-orange: #fdba74;
+    --note-green: #86efac;
+    --note-red: #fca5a5;
+    --note-marker: #a1a1aa;
   }
 }
 
@@ -97,4 +107,31 @@ button:hover {
 
 .editor-host .cm-editor {
   height: 100%;
+}
+
+.note {
+  border-radius: 3px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.note-blue {
+  color: var(--note-blue);
+}
+
+.note-orange {
+  color: var(--note-orange);
+}
+
+.note-green {
+  color: var(--note-green);
+}
+
+.note-red {
+  color: var(--note-red);
+}
+
+.note-marker {
+  color: var(--note-marker);
+  background: transparent;
+  font-style: italic;
 }

@@ -4,7 +4,16 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirro
 import { markdown } from "@codemirror/lang-markdown";
 import { indentUnit } from "@codemirror/language";
 import { Compartment, EditorState } from "@codemirror/state";
-import { EditorView, keymap, placeholder } from "@codemirror/view";
+import {
+  Decoration,
+  EditorView,
+  MatchDecorator,
+  ViewPlugin,
+  keymap,
+  placeholder,
+  type DecorationSet,
+  type ViewUpdate,
+} from "@codemirror/view";
 import { useEffect, useRef } from "react";
 
 interface Props {
@@ -13,6 +22,30 @@ interface Props {
   initial: string;
   onChange(text: string): void;
 }
+
+// A [note] is blue unless it starts with a colour's first letter and a space:
+// [o orange], [g green], [r red], [b blue]. The list markers are set apart.
+const COLOURS: Record<string, string> = { o: "orange", g: "green", r: "red", b: "blue" };
+const noteMatcher = new MatchDecorator({
+  regexp: /\[(?:([ogrb]) )?[^\]\n]*\]/g,
+  decoration: (m) => {
+    const marker = /^\[list(start|end)\]$/i.test(m[0]);
+    const colour = marker ? "marker" : (COLOURS[m[1]] ?? "blue");
+    return Decoration.mark({ class: `note note-${colour}` });
+  },
+});
+const notes = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+    constructor(view: EditorView) {
+      this.decorations = noteMatcher.createDeco(view);
+    }
+    update(update: ViewUpdate) {
+      this.decorations = noteMatcher.updateDeco(update, this.decorations);
+    }
+  },
+  { decorations: (v) => v.decorations },
+);
 
 const theme = EditorView.theme({
   "&": { height: "100%", fontSize: "15px" },
@@ -44,6 +77,7 @@ export function Editor({ docId, initial, onChange }: Props) {
         new Compartment().of(EditorView.lineWrapping),
         placeholder("# A heading\n- A point [a note about it]\n  - a nested note"),
         theme,
+        notes,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) latest.current(update.state.doc.toString());
         }),

@@ -34,6 +34,12 @@ CloudFront (nested.holotekt.com)
   nesting and all, with only the notes removed;
 - paragraphs and fenced code are kept as they are.
 
+## Notes in the editor
+
+A `[note]` is shown in blue. A first letter and a space pick another colour:
+`[o orange]`, `[g green]`, `[r red]`, `[b blue]`. The letter is part of the note and is
+dropped with it.
+
 ## Local development
 
 ```sh
