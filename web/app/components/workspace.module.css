@@ -140,7 +140,9 @@
   max-width: 68ch;
 }
 
-.proseBody p {
+.proseBody p,
+.proseBody > ul,
+.proseBody > ol {
   margin: 0 0 3.2em;
 }
 

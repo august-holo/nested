@@ -5,11 +5,15 @@
 //   sentence, in the order written; a blank line ends the list;
 // - anything in [square brackets] is a note, and is dropped, along with a
 //   (link target) that follows it;
+// - between [liststart] and [listend], a list is shown as a list, nesting and
+//   all, with only the notes removed;
 // - paragraphs and fenced code are kept as they are.
 
 const HEADING = /^(#{1,6})\s+(.*)$/;
 const ITEM = /^\s*([-*+]|\d+[.)])\s+(.*)$/;
 const FENCE = /^\s*(```|~~~)/;
+const LIST_START = /^\s*\[liststart\]\s*$/i;
+const LIST_END = /^\s*\[listend\]\s*$/i;
 const ENDS_SENTENCE = /[.!?:;…"”’)]$/;
 
 function stripNotes(text: string) {
@@ -33,6 +37,7 @@ export function toProse(markdown: string): string {
   let paragraph: string[] = [];
   let inList = false;
   let fence: string[] | null = null;
+  let kept: string[] | null = null;
 
   const flush = () => {
     if (paragraph.length) out.push(paragraph.join(" "));
@@ -54,6 +59,24 @@ export function toProse(markdown: string): string {
     if (FENCE.test(line)) {
       flush();
       fence = [line];
+      continue;
+    }
+
+    if (kept) {
+      if (LIST_END.test(line)) {
+        out.push(kept.join("\n"));
+        kept = null;
+      } else {
+        // Indentation and markers stay; only the notes go.
+        const indent = /^\s*/.exec(raw)![0];
+        const text = stripNotes(line);
+        if (text) kept.push(indent + text);
+      }
+      continue;
+    }
+    if (LIST_START.test(line)) {
+      flush();
+      kept = [];
       continue;
     }
 
@@ -93,5 +116,6 @@ export function toProse(markdown: string): string {
   }
   flush();
   if (fence) out.push(fence.join("\n"));
+  if (kept) out.push(kept.join("\n"));
   return out.join("\n\n");
 }

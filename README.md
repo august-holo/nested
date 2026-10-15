@@ -30,6 +30,8 @@ CloudFront (nested.holotekt.com)
   order written (capitalised, with a full stop added when missing); a blank line ends the
   list, so the next one is a new paragraph;
 - anything in `[square brackets]` is dropped, along with a `(link target)` that follows it;
+- between `[liststart]` and `[listend]`, each on its own line, a list is shown as a list,
+  nesting and all, with only the notes removed;
 - paragraphs and fenced code are kept as they are.
 
 ## Local development

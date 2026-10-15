@@ -40,3 +40,25 @@ test("fenced code is kept as it is", () => {
   const input = "- Item\n\n```\n- not a list [x]\n```";
   assert.equal(toProse(input), "Item.\n\n```\n- not a list [x]\n```");
 });
+
+test("a list between [liststart] and [listend] stays a list, without its notes", () => {
+  const input = [
+    "- Flows into prose",
+    "",
+    "[liststart]",
+    "- Packing [check]",
+    "  - rope",
+    "  - lamp [spare batteries]",
+    "- Food",
+    "[listend]",
+    "- Flows again",
+  ].join("\n");
+  assert.equal(
+    toProse(input),
+    "Flows into prose.\n\n- Packing\n  - rope\n  - lamp\n- Food\n\nFlows again.",
+  );
+});
+
+test("an unclosed [liststart] runs to the end", () => {
+  assert.equal(toProse("[liststart]\n- One\n- Two"), "- One\n- Two");
+});
