@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { documentsApi, type Document, type Summary } from "../lib/api";
-import { toProse } from "../lib/prose";
+import { toProseBlocks } from "../lib/prose";
 import { useSession } from "../lib/session";
 import { Editor } from "./editor";
 import styles from "./workspace.module.css";
@@ -137,7 +137,7 @@ export function Workspace() {
     URL.revokeObjectURL(url);
   };
 
-  const prose = useMemo(() => toProse(draft.body), [draft.body]);
+  const prose = useMemo(() => toProseBlocks(draft.body), [draft.body]);
 
   return (
     <div className={styles.workspace}>
@@ -189,14 +189,16 @@ export function Workspace() {
                 Delete
               </button>
             </header>
-            <Editor docId={current.id} initial={current.body} onChange={(body) => edit({ body })} />
+            <Editor docId={current.id} initial={draft.body} onChange={(body) => edit({ body })} />
           </section>
           <section className={`${styles.pane} ${styles.prose}`}>
             <header className={styles.paneHead}>
               <span className={styles.paneLabel}>Prose</span>
             </header>
             <div className={styles.proseBody}>
-              <ReactMarkdown>{prose}</ReactMarkdown>
+              {prose.map((block, i) => (
+                <ReactMarkdown key={i}>{block}</ReactMarkdown>
+              ))}
             </div>
           </section>
         </>

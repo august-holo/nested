@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { toProse } from "./prose.ts";
+import { toProse, toProseBlocks } from "./prose.ts";
 
 test("a list becomes one paragraph, nested items included, notes dropped", () => {
   const input = [
@@ -61,4 +61,33 @@ test("a list between [liststart] and [listend] stays a list, without its notes",
 
 test("an unclosed [liststart] runs to the end", () => {
   assert.equal(toProse("[liststart]\n- One\n- Two"), "- One\n- Two");
+});
+
+test("kept lists are separate blocks, and bare markers are dropped", () => {
+  const input = "[liststart]\n- One\n- \n[listend]\n\n[liststart]\n- Two\n[listend]";
+  assert.deepEqual(toProseBlocks(input), ["- One", "- Two"]);
+});
+
+test("kept lists nest on any deeper indent, including under numbered items", () => {
+  const input = [
+    "[liststart]",
+    "1. First",
+    " - one space in",
+    "\t- a tab in, deeper",
+    " - one space again, back out",
+    "2. Second",
+    "   carried on",
+    "[listend]",
+  ].join("\n");
+  assert.equal(
+    toProse(input),
+    [
+      "1. First",
+      "   - one space in",
+      "     - a tab in, deeper",
+      "   - one space again, back out",
+      "2. Second",
+      "   carried on",
+    ].join("\n"),
+  );
 });

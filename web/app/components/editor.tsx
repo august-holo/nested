@@ -86,7 +86,8 @@ export function Editor({ docId, initial, onChange }: Props) {
     const view = new EditorView({ state, parent: host.current! });
     view.focus();
     return () => view.destroy();
-    // The editor holds its own text; only a different document should replace it.
+    // The editor holds its own text; only a different document replaces it. When
+    // the effect does re-run (hot reload), `initial` is the draft, never older text.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [docId]);
 
