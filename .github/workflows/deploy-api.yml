@@ -38,6 +38,7 @@ jobs:
       - run: |
           rustup target add aarch64-unknown-linux-musl
           pipx install cargo-zigbuild==0.23.4
+          pip3 install ziglang==0.14.1 # the zig compiler cargo-zigbuild cross-compiles with
       - run: cargo clippy --locked --all-targets -- -D warnings
         working-directory: api
       - run: cargo test --locked --release
