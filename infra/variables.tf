@@ -37,3 +37,15 @@ variable "api_port" {
   type    = number
   default = 8080
 }
+
+# GitHub's OIDC subject names the owner and repository by id as well as by name
+# (repo:owner@id/name@id:ref:...). Both are public; see the GitHub API.
+variable "github_owner_id" {
+  type    = number
+  default = 175449501
+}
+
+variable "github_repo_id" {
+  type    = number
+  default = 1408095891
+}
