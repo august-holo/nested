@@ -56,15 +56,18 @@ The first deploy, once the GitHub repository `august-holo/nested` exists:
 
 ```sh
 scripts/bootstrap-state.sh                # once: the S3 bucket for Terraform state
-cd infra && terraform init && terraform apply
+cd infra && terraform init -backend-config=backend.hcl && terraform apply
 scripts/deploy-api.sh && scripts/deploy-web.sh
 ```
 
 After that, pushing to `main` deploys the API and the site through GitHub Actions, each
 only when its own files changed. The workflows assume an IAM role via OIDC; there are no
 AWS credentials stored in GitHub. Terraform is applied locally, never from CI; its state
-is in S3. Terraform writes `.github/deploy.env` and `web/.env`, which hold identifiers,
-not secrets, and are committed so CI needs no configuration in GitHub.
+is in S3. Terraform writes `.github/deploy.env` and `web/.env` for this machine; neither is committed.
+CI reads the same names from the repository's Actions variables (Settings → Secrets and
+variables → Actions → Variables): `AWS_REGION`, `DEPLOY_ROLE_ARN`, `SITE_BUCKET`,
+`ARTIFACTS_BUCKET`, `DISTRIBUTION_ID`, `INSTANCE_ID`, `DEPLOY_DOCUMENT`, and the three
+`NEXT_PUBLIC_COGNITO_*` values. Copy them from the two generated files after `terraform apply`.
 
 ## Users
 

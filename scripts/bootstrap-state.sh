@@ -17,4 +17,12 @@ aws s3api put-bucket-versioning --bucket "$BUCKET" --versioning-configuration St
 aws s3api put-bucket-encryption --bucket "$BUCKET" --server-side-encryption-configuration \
   '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
 
-echo "state bucket ready: $BUCKET"
+cat > "$(dirname "$0")/../infra/backend.hcl" <<EOF
+bucket       = "$BUCKET"
+key          = "nested.tfstate"
+region       = "$REGION"
+encrypt      = true
+use_lockfile = true
+EOF
+
+echo "state bucket ready: $BUCKET (settings in infra/backend.hcl)"

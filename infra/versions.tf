@@ -16,14 +16,9 @@ terraform {
     }
   }
 
-  # Bucket is created once by scripts/bootstrap-state.sh
-  backend "s3" {
-    bucket       = "nested-tfstate-ACCOUNT_ID"
-    key          = "nested.tfstate"
-    region       = "us-east-1"
-    encrypt      = true
-    use_lockfile = true
-  }
+  # Settings live in infra/backend.hcl, written by scripts/bootstrap-state.sh and
+  # not committed:  terraform init -backend-config=backend.hcl
+  backend "s3" {}
 }
 
 # CloudFront certificates must live in us-east-1, so everything does.

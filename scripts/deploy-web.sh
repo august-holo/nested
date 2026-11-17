@@ -4,7 +4,12 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-set -a && source "$ROOT/.github/deploy.env" && set +a
+# Written by Terraform on a laptop; CI has the same names as environment variables.
+if [ -f "$ROOT/.github/deploy.env" ]; then
+  set -a && source "$ROOT/.github/deploy.env" && set +a
+fi
+for v in AWS_REGION SITE_BUCKET DISTRIBUTION_ID; do : "${!v:?$v is not set}"; done
+export AWS_REGION
 
 (cd "$ROOT/web" && npm ci && npm run lint && npm run build)
 

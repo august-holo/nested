@@ -4,7 +4,12 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-set -a && source "$ROOT/.github/deploy.env" && set +a
+# Written by Terraform on a laptop; CI has the same names as environment variables.
+if [ -f "$ROOT/.github/deploy.env" ]; then
+  set -a && source "$ROOT/.github/deploy.env" && set +a
+fi
+for v in AWS_REGION ARTIFACTS_BUCKET INSTANCE_ID DEPLOY_DOCUMENT; do : "${!v:?$v is not set}"; done
+export AWS_REGION
 
 SHA=${GITHUB_SHA:-$(git -C "$ROOT" rev-parse HEAD)}
 TARGET=aarch64-unknown-linux-musl

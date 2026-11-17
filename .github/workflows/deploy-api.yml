@@ -6,7 +6,6 @@ on:
     paths:
       - api/**
       - scripts/deploy-api.sh
-      - .github/deploy.env
       - .github/workflows/deploy-api.yml
 
 concurrency:
@@ -20,11 +19,17 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-24.04
+    # Set under Settings → Secrets and variables → Actions → Variables; none are secret.
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      DEPLOY_ROLE_ARN: ${{ vars.DEPLOY_ROLE_ARN }}
+      ARTIFACTS_BUCKET: ${{ vars.ARTIFACTS_BUCKET }}
+      INSTANCE_ID: ${{ vars.INSTANCE_ID }}
+      DEPLOY_DOCUMENT: ${{ vars.DEPLOY_DOCUMENT }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: cat .github/deploy.env | grep -v '^#' >> "$GITHUB_ENV"
       - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}

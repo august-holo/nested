@@ -11,3 +11,7 @@
 *.tfstate
 *.tfstate.*
 tfplan
+
+# written by Terraform for this machine; CI gets the same values from repository variables
+/.github/deploy.env
+/infra/backend.hcl

@@ -10,8 +10,8 @@ output "instance_id" {
   value = aws_instance.api.id
 }
 
-# None of the values below are secrets. They are committed so that CI needs
-# no configuration in GitHub beyond the repository itself.
+# Settings for this machine. CI gets the same names from the repository's
+# Actions variables (see the README), so none of this is committed.
 
 resource "local_file" "deploy_env" {
   filename        = "${path.module}/../.github/deploy.env"
